@@ -15,3 +15,19 @@ codeunit 50188 "Payload Reader Bad"
         exit(PayloadText);
     end;
 }
+
+table 50188 "Integration Log Demo"
+{
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; "Entry No."; Integer) { }
+        field(2; Payload; Blob) { }
+    }
+
+    keys
+    {
+        key(PK; "Entry No.") { Clustered = true; }
+    }
+}

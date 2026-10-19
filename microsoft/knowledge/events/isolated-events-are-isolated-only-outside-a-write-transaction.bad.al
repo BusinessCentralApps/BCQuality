@@ -18,3 +18,23 @@ codeunit 50180 "Shipment Confirmation Bad"
     begin
     end;
 }
+
+table 50180 "Shipment Header Demo"
+{
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; "No."; Code[20]) { }
+        field(2; "Carrier Code"; Code[10]) { }
+        field(3; Status; Option)
+        {
+            OptionMembers = Open,Confirmed;
+        }
+    }
+
+    keys
+    {
+        key(PK; "No.") { Clustered = true; }
+    }
+}

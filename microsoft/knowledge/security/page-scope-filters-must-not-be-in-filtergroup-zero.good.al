@@ -18,6 +18,23 @@ page 50185 "My Expense Claims Good"
                 field("Employee User ID"; Rec."Employee User ID") { }
                 field(Amount; Rec.Amount) { }
             }
+
+            table 50185 "Expense Claim Demo"
+            {
+                DataClassification = CustomerContent;
+
+                fields
+                {
+                    field(1; "No."; Code[20]) { }
+                    field(2; "Employee User ID"; Text[50]) { }
+                    field(3; Amount; Decimal) { }
+                }
+
+                keys
+                {
+                    key(PK; "No.") { Clustered = true; }
+                }
+            }
         }
     }
 

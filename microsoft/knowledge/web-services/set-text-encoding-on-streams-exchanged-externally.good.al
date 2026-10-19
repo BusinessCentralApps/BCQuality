@@ -1,4 +1,4 @@
-// Demonstration only. Shows the recommended pattern: exported text uses an explicit UTF-8 encoding on both streams.
+// Demonstration only. UTF-8 text is downloaded byte-for-byte through a default-encoding InStream.
 
 codeunit 50191 "Customer CSV Export Good"
 {
@@ -17,8 +17,24 @@ codeunit 50191 "Customer CSV Export Good"
                 CsvOutStream.WriteText();
             until Customer.Next() = 0;
 
-        ExportBuffer.Content.CreateInStream(CsvInStream, TextEncoding::UTF8);
+        ExportBuffer.Content.CreateInStream(CsvInStream);
         FileName := 'customers.csv';
         DownloadFromStream(CsvInStream, '', '', '', FileName);
     end;
+}
+
+table 50191 "Export Buffer Demo"
+{
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; "Entry No."; Integer) { }
+        field(2; Content; Blob) { }
+    }
+
+    keys
+    {
+        key(PK; "Entry No.") { Clustered = true; }
+    }
 }

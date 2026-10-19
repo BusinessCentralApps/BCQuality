@@ -24,3 +24,19 @@ codeunit 50190 "Customer CSV Export Bad"
         DownloadFromStream(CsvInStream, '', '', '', FileName);
     end;
 }
+
+table 50190 "Export Buffer Demo"
+{
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; "Entry No."; Integer) { }
+        field(2; Content; Blob) { }
+    }
+
+    keys
+    {
+        key(PK; "Entry No.") { Clustered = true; }
+    }
+}

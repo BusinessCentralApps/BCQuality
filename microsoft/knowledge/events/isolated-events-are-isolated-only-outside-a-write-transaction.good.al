@@ -26,3 +26,23 @@ codeunit 50181 "Shipment Confirmation Good"
     begin
     end;
 }
+
+table 50181 "Shipment Header Demo"
+{
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; "No."; Code[20]) { }
+        field(2; "Carrier Code"; Code[10]) { }
+        field(3; Status; Option)
+        {
+            OptionMembers = Open,Confirmed;
+        }
+    }
+
+    keys
+    {
+        key(PK; "No.") { Clustered = true; }
+    }
+}
