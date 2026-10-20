@@ -19,22 +19,6 @@ page 50184 "My Expense Claims Bad"
                 field(Amount; Rec.Amount) { }
             }
 
-            table 50184 "Expense Claim Demo"
-            {
-                DataClassification = CustomerContent;
-
-                fields
-                {
-                    field(1; "No."; Code[20]) { }
-                    field(2; "Employee User ID"; Text[50]) { }
-                    field(3; Amount; Decimal) { }
-                }
-
-                keys
-                {
-                    key(PK; "No.") { Clustered = true; }
-                }
-            }
         }
     }
 
@@ -44,4 +28,21 @@ page 50184 "My Expense Claims Bad"
         // filter pane and see every employee's claims.
         Rec.SetRange("Employee User ID", UserId());
     end;
+}
+
+table 50184 "Expense Claim Demo"
+{
+    DataClassification = CustomerContent;
+
+    fields
+    {
+        field(1; "No."; Code[20]) { }
+        field(2; "Employee User ID"; Text[50]) { }
+        field(3; Amount; Decimal) { }
+    }
+
+    keys
+    {
+        key(PK; "No.") { Clustered = true; }
+    }
 }
