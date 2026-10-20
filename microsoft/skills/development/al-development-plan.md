@@ -61,7 +61,7 @@ For each worklist article:
 
 1. Copy its exact path and optional commit SHA.
 2. State `used-for` as the concrete plan decision or affected surface.
-3. Translate its normative Best Practice and Anti Pattern into short implementation constraints without adding facts or weakening conditions.
+3. Translate its normative Best Practice and Anti Pattern into short implementation constraints without adding facts or weakening conditions. A fact from a non-normative section such as Description may explain or bound how a normative rule applies, but never forms a constraint on its own.
 4. Include only opened, existing sibling samples in `sample-paths`.
 5. Derive validation considerations only where the plan or selected knowledge requires observable evidence. Describe the evidence to obtain; do not claim it already exists or passed.
 
