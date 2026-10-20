@@ -14,6 +14,15 @@
     }
   ],
   "overrides": {
+    "copilot": {
+      "articles": [
+        "call-azure-openai-through-the-ai-module",
+        "check-aoai-operation-response-before-using-output",
+        "keep-user-input-out-of-the-system-message",
+        "register-copilot-capability-on-install-and-upgrade",
+        "save-promptdialog-proposals-only-when-the-user-keeps-them"
+      ]
+    },
     "agents": {
       "article": "wire-all-three-agent-interfaces"
     },
