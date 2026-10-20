@@ -147,8 +147,8 @@ source-scope locations, and article-body retrieval.
       "message": "string",
       "location": {
         "file": "string",
-        "line": 0,
-        "range": { "start-line": 0, "end-line": 0 }
+        "line": 1,
+        "range": { "start-line": 1, "end-line": 1 }
       },
       "references": [
         { "path": "string", "sha": "string" }
@@ -183,6 +183,26 @@ source-scope locations, and article-body retrieval.
 The emitted document MUST be strict, valid JSON per [RFC 8259](https://www.rfc-editor.org/rfc/rfc8259). Inside every string value, all double quotes MUST be escaped as `\"` and all line breaks as `\n`; other control characters MUST use their JSON escapes. This is not optional polish — it is the difference between a parseable report and one a consumer silently drops.
 
 AL source is the common failure case. Quoted identifiers (for example `Rec."No."`) and multi-line snippets routinely appear in `message`, `suggested-code`, and `suggested-code-omission-reason`, and each embedded quote or newline MUST be escaped when placed in a string value. A `suggested-code` payload that spans several lines is a single JSON string with `\n` separators, not a literal multi-line block. Emit the document as one JSON value with no trailing commentary, and do not rely on the consumer to repair unescaped output.
+
+### Producer pre-emission checklist
+
+Before emitting each leaf report or super-skill rollup:
+
+1. Copy every citation-based `findings[].id` verbatim from
+   `references[0].path`, with no `#` fragment or other suffix. Apply the
+   reference-integrity gate below.
+2. For `references: []`, emit only `confidence: "medium"` or `"low"` and
+   `severity: "minor"` or `"info"`. Preserve the role-specific agent ID
+   prefixes defined below.
+3. Open the final source snapshot for every `location.file`. Verify `line`
+   and any inclusive range bounds are 1-based final-file line numbers within
+   that file's length, never diff/patch-relative line numbers. If the source
+   snapshot cannot be verified, return `outcome: "failed"` with an
+   `outcome-reason`, not unverified locations.
+
+Validate the complete document against the schema and semantic rules before
+returning it. Consumers MUST NOT strip ID suffixes, downgrade agent findings,
+or clamp locations to make an invalid report pass the acceptance gate.
 
 ### Consumer acceptance gate
 
@@ -240,6 +260,41 @@ as a findings-report, a coordinator or host MUST validate it deterministically:
    review scope, the file exists in that source snapshot, and `line` and any
    inclusive range identify existing lines with `start-line == line` and
    `end-line >= start-line`.
+
+Hosts SHOULD execute `tools/Validate-FindingsReport.ps1` with the exact source
+scope and the leaf's recorded set of fully retrieved article paths. Pass
+`-SkillKind super -ExpectedCompositionPath <host-owned-json>` when validating
+a super-skill's rolled-up report. Prepare that private artifact before leaf
+dispatch, after layer resolution and input compatibility checks. It contains
+`superSkill` (`id`, `version`), ordered selected `subSkills` (each with `id`,
+`version`), `skipped` (each with `id`, `version`, `reason`), and an initially
+empty `acceptedResults` array. Reasons are `configuration` or `not-applicable`;
+budget exhaustion is not a skip reason.
+Additional resolver metadata may be retained in the artifact, not the report.
+After each leaf passes its acceptance gate, the host saves the exact accepted
+copy in a private immutable file and appends an `acceptedResults` entry with
+`id`, `version`, and `reportPath`. Capture host-created failed validation
+results the same way. Paths may be absolute or relative to the composition
+artifact's directory. Capture the normalized accepted copy when normalization
+was permitted, not the invalid raw return. Do not expose these files or write
+access to the artifact to leaf workers or the composing model. Only the host
+may append captures; the pre-dispatch selection and exclusions remain fixed.
+The validator binds the super-skill and leaf identities and versions, checks
+selected order, and requires exact agreement on exclusions. Each nested leaf
+must exactly match its host-captured accepted JSON content, ignoring object
+property order but preserving array order, types, values, and field presence.
+Every captured leaf must be included; uncaptured or altered leaves are invalid.
+Every returned leaf must be unique; a selected leaf cannot be reclassified as skipped by the
+report. When selected leaves are missing, `outcome-reason` must name every
+missing ID exactly and top-level `from-sub-skill: "agent"` findings are forbidden.
+Without the artifact, validation remains structural and semantic but
+cannot prove composition completeness, selected versions, order, or legitimate
+exclusions, nor bind leaves to accepted host outputs. Duplicate or both
+returned-and-skipped leaf IDs are invalid even without the artifact. Never
+derive the expected composition from model output.
+Pass
+`-AllowBoundedNormalization` only when the host preserves the immutable raw
+payload and records `removedRanges` in private telemetry as required above.
 
 Validation failure invalidates the complete return; consumers MUST NOT salvage
 individual findings, infer missing fields, reconstruct JSON, clamp ranges,
@@ -343,7 +398,7 @@ Omit `suggested-code` only when the appropriate fix depends on context the skill
 - `reference` — the suppressed file (same object shape as `findings[].references`).
 - `reason` — `layer-precedence` when another layer won under READ's precedence rules; `configuration` when the consumer disabled the file's layer.
 
-**`sub-results`** — super-skills only. Array of complete findings-reports, one per sub-skill that was invoked (i.e., every sub-skill not listed in `skipped-sub-skills`). Each entry MUST itself conform to this output contract. Entries MUST appear in the worklist's declared order, regardless of invocation or completion order. Leaf skills MUST NOT emit `sub-results`.
+**`sub-results`** — super-skills only. Array of complete findings-reports, one per invoked sub-skill, with no duplicate skill IDs. Each entry MUST itself conform to this output contract. Entries MUST appear in the worklist's declared order, regardless of invocation or completion order. A selected leaf left uninvoked by budget exhaustion has no fabricated sub-result and is not a configured or input-incompatible skip; its absence requires the incomplete-composition outcome below. Leaf skills MUST NOT emit `sub-results`.
 
 **`skipped-sub-skills`** — super-skills only. Array of sub-skills that were declared in frontmatter but not invoked. `reason` is `configuration` when the orchestrator disabled the sub-skill, or `not-applicable` when the super-skill's Relevance step ruled it out.
 
@@ -444,22 +499,37 @@ orchestrator.
 
 Each leaf invocation MUST remain a discrete evaluation with its own complete
 findings-report. An orchestrator MAY execute independent leaves serially or
-concurrently, but MUST invoke every worklisted leaf, preserve `sub-results` in
-the declared worklist order, and wait for every invocation to finish before
-performing any super-skill self-review or final rollup. Scheduling MUST NOT
-change relevance, coverage, failure, reference-integrity, or output semantics.
+concurrently, but MUST attempt every worklisted leaf, preserve `sub-results`
+in the declared worklist order, and wait for every started invocation to
+finish before final rollup. If its execution budget prevents dispatching
+remaining leaves, preserve the unfinished selection in the host-owned expected
+composition and use the incomplete-composition outcome below. Do not perform
+the super-skill self-review until every selected leaf has returned. Scheduling
+MUST NOT change relevance, coverage, failure, reference-integrity, or output
+semantics.
 
 Orchestrators SHOULD generate `skill-index.json` with
-`tools/Build-SkillIndex.ps1` and consume the super-skill's ordered `subSkills`
-from that index instead of parsing Markdown. Action-skill frontmatter remains
-the source of truth; the generated index conforms to
+`tools/Build-SkillIndex.ps1` instead of parsing Markdown. Each declared
+`subSkills` path defines an ordered leaf slot: its indexed `id` identifies the
+slot, while its path fixes the declaration order. Before scheduling leaves,
+the orchestrator MUST resolve each slot to the highest-precedence enabled,
+non-disabled leaf with that `id` (`custom` over `community` over `microsoft`).
+If no implementation remains, the slot is skipped with `reason:
+"configuration"`. The orchestrator SHOULD use
+`tools/Resolve-SkillWorklist.ps1` for this resolution. Action-skill
+frontmatter remains the source of truth; the generated index conforms to
 `schemas/skill-index.schema.json`.
+
+Layer resolution MUST NOT reorder slots. Multiple implementations with the
+same `id` are valid only when they belong to different layers; duplicate IDs
+within one layer are invalid. Disabling a winning implementation falls back
+to the next enabled implementation for that slot when one exists.
 
 ### Section interpretation for super-skills
 
 The five required sections still apply. Their meaning shifts from knowledge files to sub-skills:
 
-- `## Source` — names the sub-skills invoked (mirrors `sub-skills` in frontmatter).
+- `## Source` — names the declared sub-skill slots (mirrors `sub-skills` in frontmatter) and resolves their effective leaf implementations by the layered rule above.
 - `## Relevance` — rules for deciding which sub-skills apply to the current task. A sub-skill is relevant when its declared `inputs` are satisfied by the orchestrator's provided inputs and the orchestrator has not disabled it via configuration. The super-skill MUST NOT filter sub-skills by task content (for example, by inspecting the diff or the file). Task-level applicability is the sub-skill's own responsibility; sub-skills signal non-applicability by returning `outcome: "not-applicable"` or `outcome: "no-knowledge"`.
 - `## Worklist` — the final list of sub-skills to invoke; the rest go to `skipped-sub-skills`.
 - `## Action` — invoke each worklisted sub-skill with the appropriate subset of inputs, collect its findings-report verbatim into `sub-results`, and copy its `findings[]` into the super-skill's top-level `findings[]` with `from-sub-skill` set. All finding fields, including the optional `domain`, are preserved verbatim unless this contract explicitly requires a transformation. Findings from a sub-skill with `outcome: "failed"` MUST NOT be copied into the super-skill's top-level `findings[]` and MUST NOT contribute to the super-skill's `summary.counts` (their report is still preserved in `sub-results` for traceability, consistent with DO's rule that consumers ignore a failed skill's findings).
@@ -467,7 +537,16 @@ The five required sections still apply. Their meaning shifts from knowledge file
 
 ### Outcome rollup
 
-A super-skill's `outcome` is derived from its sub-skills' outcomes. Let S be the multiset of sub-skill outcomes for sub-skills in the worklist (skipped sub-skills do not contribute):
+A super-skill's `outcome` is derived from its selected worklist and returned
+sub-skills' outcomes. If selected leaves have no returned report, the outcome
+is `partial` when at least one returned report is non-`failed`, or `failed`
+when no non-`failed` report is available. It MUST NOT be `completed`,
+`not-applicable`, or `no-knowledge`. Name unfinished leaf IDs in
+`outcome-reason`, preserve the valid returned reports, and never invent
+successful or failed invocations for leaves that were not invoked.
+
+When every selected leaf has returned, let S be the multiset of their outcomes
+(skipped sub-skills do not contribute):
 
 - `failed` — every element of S is `failed`.
 - `partial` — S contains at least one `partial`, OR S contains at least one `failed` alongside at least one non-`failed` outcome.
