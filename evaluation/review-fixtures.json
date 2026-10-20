@@ -107,6 +107,7 @@
         "avoid-repeating-unchanged-validation",
         "avoid-get-inside-loop-on-large-table",
         "isempty-before-findset-is-extra-round-trip",
+    "boolean-operators-do-not-short-circuit",
         "query-results-bypass-primary-key-cache",
         "calcsums-instead-of-calcfields-in-loop",
         "use-setautocalcfields-for-per-row-flowfields",
