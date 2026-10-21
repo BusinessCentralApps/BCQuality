@@ -29,4 +29,6 @@ A locally declared variable without the exact `ViVeLe` prefix, or whose suffix d
 
 When reporting a violation, include the marker `PARIS-NAMING` in the finding title, identify the offending declaration, and suggest the correctly transformed identifier. Cite `custom/knowledge/style/paris-variable-naming.md` so the developer can distinguish this custom policy from standard guidance.
 
+Every finding citing this article must have `id` exactly `custom/knowledge/style/paris-variable-naming.md`, identical to `references[0].path`. Multiple variables may share this rule ID; distinguish them by location and message. Never append a `#fragment`, variable name, or other suffix to the ID. Keep `PARIS-NAMING` in the title or message, not in the ID.
+
 See sample: [`paris-variable-naming.bad.al`](paris-variable-naming.bad.al).
