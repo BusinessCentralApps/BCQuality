@@ -817,8 +817,7 @@ try {
         $layerDirectory = Join-Path $layerFixtureRoot $layer
         New-Item -ItemType Directory -Path $layerDirectory -Force | Out-Null
         $sourceSkills = Join-Path $Root "$layer/skills"
-        # This fixture supplies its own custom override, independent of a fork's policies.
-        if ($layer -ne 'custom' -and (Test-Path -LiteralPath $sourceSkills -PathType Container)) {
+        if (Test-Path -LiteralPath $sourceSkills -PathType Container) {
             Copy-Item -LiteralPath $sourceSkills -Destination (Join-Path $layerDirectory 'skills') -Recurse
         }
     }

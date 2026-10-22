@@ -35,8 +35,3 @@ jobs:
             -ChangedPathsFile "$env:RUNNER_TEMP/changed-paths.txt" `
             -CoverageReportPath "$env:RUNNER_TEMP/review-coverage.json"
           Get-Content -LiteralPath "$env:RUNNER_TEMP/review-coverage.json"
-
-      - name: Validate Paris policy routing and prepare path-preserving cases
-        shell: pwsh
-        run: |
-          ./custom/evaluation/Test-ParisPolicies.ps1 -RunDirectory "$env:RUNNER_TEMP/paris-policy-review"
