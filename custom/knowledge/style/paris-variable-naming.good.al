@@ -2,8 +2,8 @@ codeunit 50100 "Paris Naming Example"
 {
     procedure HasCustomers(): Boolean
     var
-        ViVeLeCuStOmEr: Record Customer;
+        CroissantCustomer: Record Customer;
     begin
-        exit(not ViVeLeCuStOmEr.IsEmpty());
+        exit(not CroissantCustomer.IsEmpty());
     end;
 }

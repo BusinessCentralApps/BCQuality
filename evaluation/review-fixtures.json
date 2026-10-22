@@ -5,6 +5,10 @@
   "minimumCleanRate": 1.0,
   "coverageWaivers": [
     {
+      "path": "custom/knowledge/style/paris-variable-naming.md",
+      "reason": "Covered by custom/evaluation/Test-ParisPolicies.ps1 with path-preserving folder and naming cases. Shared style clean controls are not company-policy clean controls; keep the opt-in Paris evaluation separate."
+    },
+    {
       "path": "microsoft/knowledge/reporting/do-not-rename-or-remove-shipped-report-dataset-columns.md",
       "reason": "The defect is a change relative to a released version; a single neutralized sample cannot show which column names shipped before."
     },

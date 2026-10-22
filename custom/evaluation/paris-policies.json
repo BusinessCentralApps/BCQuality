@@ -1,0 +1,100 @@
+{
+  "cases": [
+    {
+      "id": "case-01",
+      "path": "src/Loose/ParisExample.Table.al",
+      "source": "table 50100 \"Paris Example\"\n{\n    Caption = 'Paris Example';\n    DataClassification = CustomerContent;\n}\n",
+      "expected": ["custom/knowledge/style/paris-object-type-folders.md"]
+    },
+    {
+      "id": "case-02",
+      "path": "src/Tables/ParisExample.Table.al",
+      "source": "table 50100 \"Paris Example\"\n{\n    Caption = 'Paris Example';\n    DataClassification = CustomerContent;\n}\n",
+      "expected": []
+    },
+    {
+      "id": "case-03",
+      "path": "src/Tables/ParisExample.Codeunit.al",
+      "source": "codeunit 50100 \"Paris Example\"\n{\n}\n",
+      "expected": ["custom/knowledge/style/paris-object-type-folders.md"]
+    },
+    {
+      "id": "case-04",
+      "path": "src/Codeunits/ParisExample.Codeunit.al",
+      "source": "codeunit 50100 \"Paris Example\"\n{\n}\n",
+      "expected": []
+    },
+    {
+      "id": "case-05",
+      "path": "Apps/Sales/src/Orders/Tables/ParisExample.Table.al",
+      "source": "table 50100 \"Paris Example\"\n{\n    Caption = 'Paris Example';\n    DataClassification = CustomerContent;\n}\n",
+      "expected": []
+    },
+    {
+      "id": "case-06",
+      "path": "src/tables/ParisExample.Table.al",
+      "source": "table 50100 \"Paris Example\"\n{\n    Caption = 'Paris Example';\n    DataClassification = CustomerContent;\n}\n",
+      "expected": ["custom/knowledge/style/paris-object-type-folders.md"]
+    },
+    {
+      "id": "case-07",
+      "path": "src/Tables/Archive/ParisExample.Table.al",
+      "source": "table 50100 \"Paris Example\"\n{\n    Caption = 'Paris Example';\n    DataClassification = CustomerContent;\n}\n",
+      "expected": ["custom/knowledge/style/paris-object-type-folders.md"]
+    },
+    {
+      "id": "case-08",
+      "path": "src/Tables/ParisCustomer.TableExt.al",
+      "source": "tableextension 50100 \"Paris Customer\" extends Customer\n{\n}\n",
+      "expected": ["custom/knowledge/style/paris-object-type-folders.md"]
+    },
+    {
+      "id": "case-09",
+      "path": "src/TableExtensions/ParisCustomer.TableExt.al",
+      "source": "tableextension 50100 \"Paris Customer\" extends Customer\n{\n}\n",
+      "expected": []
+    },
+    {
+      "id": "case-10",
+      "path": "src/Codeunits/ParisNamingExample.Codeunit.al",
+      "sample": "custom/knowledge/style/paris-variable-naming.bad.al",
+      "expected": ["custom/knowledge/style/paris-variable-naming.md"]
+    },
+    {
+      "id": "case-11",
+      "path": "src/Codeunits/ParisNamingExample.Codeunit.al",
+      "sample": "custom/knowledge/style/paris-variable-naming.good.al",
+      "expected": []
+    },
+    {
+      "id": "case-12",
+      "path": "src/Codeunits/ParisExample.Codeunit.al",
+      "source": "codeunit 50100 \"Paris Example\"\n{\n    var\n        TotalCount: Integer;\n\n    local procedure AddCount(Count: Integer) Result: Integer\n    begin\n        TotalCount += Count;\n        Result := TotalCount;\n    end;\n}\n",
+      "expected": ["custom/knowledge/style/paris-variable-naming.md", "custom/knowledge/style/paris-variable-naming.md", "custom/knowledge/style/paris-variable-naming.md"]
+    },
+    {
+      "id": "case-13",
+      "path": "src/Codeunits/ParisExample.Codeunit.al",
+      "source": "codeunit 50100 \"Paris Example\"\n{\n    var\n        BriocheTotalCount: Integer;\n\n    local procedure AddCount(BaguetteCount: Integer) EclairResult: Integer\n    var\n        MadeleineCount: Integer;\n    begin\n        MadeleineCount := BaguetteCount;\n        BriocheTotalCount += MadeleineCount;\n        EclairResult := BriocheTotalCount;\n    end;\n}\n",
+      "expected": []
+    },
+    {
+      "id": "case-14",
+      "path": "src/Codeunits/ParisExample.Codeunit.al",
+      "source": "codeunit 50100 \"Paris Example\"\n{\n    local procedure AddCount(croissantCount: Integer; Croissant: Integer; DonutCount: Integer): Integer\n    begin\n        exit(croissantCount + Croissant + DonutCount);\n    end;\n}\n",
+      "expected": ["custom/knowledge/style/paris-variable-naming.md", "custom/knowledge/style/paris-variable-naming.md", "custom/knowledge/style/paris-variable-naming.md"]
+    },
+    {
+      "id": "case-15",
+      "path": "src/Tables/ParisExample.Table.al",
+      "source": "table 50100 \"Paris Example\"\n{\n    Caption = 'Paris Example';\n    DataClassification = CustomerContent;\n    fields\n    {\n        field(1; \"No.\"; Code[20])\n        {\n            Caption = 'No.';\n        }\n    }\n    keys\n    {\n        key(PK; \"No.\") { Clustered = true; }\n    }\n    trigger OnInsert()\n    begin\n        Rec.TestField(\"No.\");\n    end;\n}\n",
+      "expected": []
+    },
+    {
+      "id": "case-16",
+      "path": "src/Codeunits/ParisExample.Codeunit.al",
+      "source": "codeunit 50100 \"Paris Example\"\n{\n    local procedure HasCustomers(): Boolean\n    var\n        ViVeLeCuStOmEr: Record Customer;\n    begin\n        exit(not ViVeLeCuStOmEr.IsEmpty());\n    end;\n}\n",
+      "expected": ["custom/knowledge/style/paris-variable-naming.md"]
+    }
+  ]
+}
