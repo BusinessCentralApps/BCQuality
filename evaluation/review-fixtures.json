@@ -181,6 +181,7 @@
         "al-comments-must-not-restate-what-code-already-shows",
         "pages-must-not-contain-business-logic",
         "mutating-procedure-for-a-page-caller-takes-var-record",
+        "paris-variable-naming",
         "build-client-links-with-geturl"
       ]
     },
